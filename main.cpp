@@ -9,7 +9,7 @@ public:
     virtual const char* close() = 0;
 };
 
-class MockDBConnection : public DBConnection 
+class MockDBConnection : public DBConnection
 {
 public:
     MOCK_METHOD(std::string, open, (), (override));
@@ -19,7 +19,9 @@ public:
 
 class ClassThatUseDb : public DBConnection 
 {
+    DBConnection* _dataBase;
 public:
+    explicit ClassThatUseDb(DBConnection* dataBase) : _dataBase(dataBase) {};
     virtual std::string open() override { return "open"; }
     virtual bool execQuery(int one, int two) override { return (two == one * one * one); }
     virtual const char* close() override { return "close"; }
@@ -27,21 +29,24 @@ public:
 
 TEST(DBCTest1, test1)
 {
-    ClassThatUseDb dbcTest1;
+    MockDBConnection dbcTest1_mock;
+    ClassThatUseDb dbcTest1(&dbcTest1_mock);
     EXPECT_EQ(dbcTest1.open(), "open");
     EXPECT_EQ(dbcTest1.open(), "opn");
 }
 
 TEST(DBCTest2, test2)
 {
-    ClassThatUseDb dbcTest2;
+    MockDBConnection dbcTest2_mock;
+    ClassThatUseDb dbcTest2(&dbcTest2_mock);
     EXPECT_EQ(dbcTest2.execQuery(2, 8), true);
     EXPECT_EQ(dbcTest2.execQuery(3, 30), true);
 }
 
 TEST(DBCTest3, test3)
 {
-    ClassThatUseDb dbcTest3;
+    MockDBConnection dbcTest3_mock;
+    ClassThatUseDb dbcTest3(&dbcTest3_mock);
     EXPECT_STREQ(dbcTest3.close(), "close");
     EXPECT_STREQ(dbcTest3.close(), "clse");
 }
