@@ -20,9 +20,9 @@ public:
 class ClassThatUseDb : public DBConnection 
 {
 public:
-    virtual std::string open() override final { return "open"; }
-    virtual bool execQuery(int one, int two) override final { return (two == one * one * one); }
-    virtual const char* close() override final { return "close"; }
+    virtual std::string open() override { return "open"; }
+    virtual bool execQuery(int one, int two) override { return (two == one * one * one); }
+    virtual const char* close() override { return "close"; }
 };
 
 TEST(DBCTest1, test1)
