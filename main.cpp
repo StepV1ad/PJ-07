@@ -9,7 +9,7 @@ public:
     virtual const char* close() = 0;
 };
 
-class MockClassThatUseDB : public DBConnection 
+class MockDBConnection : public DBConnection 
 {
 public:
     MOCK_METHOD(std::string, open, (), (override));
