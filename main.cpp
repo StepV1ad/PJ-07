@@ -3,62 +3,47 @@
 class DBConnection
 {
 public:
-    DBConnection(){}
-    virtual ~DBConnection(){}
-    
-    virtual void open() = 0;
-    virtual void close() = 0;
-    virtual void execQuery() = 0;
-
-    virtual void checkBitRate(int bit, int rate) = 0;
+    virtual ~DBConnection() = default;
+    virtual std::string open() = 0;
+    virtual bool execQuery(int one, int two) = 0;
+    virtual const char* close() = 0;
 };
 
-void checkDBC1(DBConnection* dbc)
+class MockClassThatUseDB : public DBConnection 
 {
-    dbc->open();
-    dbc->execQuery();
-    dbc->close();
-}
-
-void checkDBC2(DBConnection* dbc)
-{
-    dbc->open();
-    dbc->checkBitRate(5, 25);
-    dbc->checkBitRate(6, 36);
-    dbc->checkBitRate(7, 47);
-    dbc->checkBitRate(8, 58);
-    dbc->close();
-}
-
-class ClassThatUseDB : public DBConnection {
 public:
-    MOCK_METHOD(void, open, (), (override));
-    MOCK_METHOD(void, close, (), (override));
-    MOCK_METHOD(void, execQuery, (), (override));
-    MOCK_METHOD(void, checkBitRate, (int bit, int rate), (override));
+    MOCK_METHOD(std::string, open, (), (override));
+    MOCK_METHOD(bool, execQuery, (int one, int two), (override));
+    MOCK_METHOD(const char*, close, (), (override));
+};
+
+class ClassThatUseDb : public DBConnection 
+{
+public:
+    virtual std::string open() override final { return "open"; }
+    virtual bool execQuery(int one, int two) override final { return (two == one * one * one); }
+    virtual const char* close() override final { return "close"; }
 };
 
 TEST(DBCTest1, test1)
 {
-    ClassThatUseDB mdbc;
-    
-    EXPECT_CALL(mdbc, open).Times(::testing::AtLeast(1));
-    EXPECT_CALL(mdbc, execQuery).Times(1);
-    EXPECT_CALL(mdbc, close).Times(::testing::AtLeast(1));
-
-    checkDBC1(&mdbc);
+    ClassThatUseDb dbcTest1;
+    EXPECT_EQ(dbcTest1.open(), "open");
+    EXPECT_EQ(dbcTest1.open(), "opn");
 }
 
 TEST(DBCTest2, test2)
 {
-    ClassThatUseDB mdbc;
+    ClassThatUseDb dbcTest2;
+    EXPECT_EQ(dbcTest2.execQuery(2, 8), true);
+    EXPECT_EQ(dbcTest2.execQuery(3, 30), true);
+}
 
-    EXPECT_CALL(mdbc, open).Times(::testing::AtLeast(1));
-    EXPECT_CALL(mdbc, execQuery).Times(1); // 0
-    EXPECT_CALL(mdbc, checkBitRate).Times(5); // 4
-    EXPECT_CALL(mdbc, close).Times(::testing::AtLeast(1));
-
-    checkDBC2(&mdbc);
+TEST(DBCTest3, test3)
+{
+    ClassThatUseDb dbcTest3;
+    EXPECT_STREQ(dbcTest3.close(), "close");
+    EXPECT_STREQ(dbcTest3.close(), "clse");
 }
 
 int main(int argc, char* argv[])
